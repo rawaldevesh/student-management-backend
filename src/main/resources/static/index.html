@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Student Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<h2>Student Management System</h2>
+
+<!-- Add Student Form -->
+<h3>Add Student</h3>
+<label for="name"></label><input id="name" placeholder="Name" />
+<label for="email"></label><input id="email" placeholder="Email" />
+<label for="phone"></label><input id="phone" placeholder="Phone" />
+<label for="address"></label><input id="address" placeholder="Address" />
+<label for="course"></label><input id="course" placeholder="Course" />
+<button onclick="addStudent()">Add</button>
+
+<hr />
+
+<!-- Get All Students -->
+<h3>All Students</h3>
+<button onclick="getAll()">Load Students</button>
+<table border="1" id="studentTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Address</th>
+        <th>Course</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    const API_URL = "http://localhost:9999/api/students";
+
+    // Fetch all students
+    function getAll() {
+      axios
+        .get(API_URL)
+        .then((res) => {
+          const data = res.data;
+          const tbody = document.querySelector("#studentTable tbody");
+          tbody.innerHTML = "";
+          data.forEach((s) => {
+            const row = `<tr>
+            <td>${s.id}</td>
+            <td>${s.name}</td>
+            <td>${s.email}</td>
+            <td>${s.phone}</td>
+            <td>${s.address}</td>
+            <td>${s.course}</td>
+            <td>
+              <button onclick="deleteStudent(${s.id})">Delete</button>
+            </td>
+          </tr>`;
+            tbody.innerHTML += row;
+          });
+        })
+        .catch((err) => alert("Error loading students"));
+    }
+
+    // Add new student
+    function addStudent() {
+      const student = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value,
+        course: document.getElementById("course").value,
+      };
+      axios
+        .post(API_URL, student)
+        .then(() => {
+          alert("Student added successfully!");
+          getAll();
+        })
+        .catch((err) => alert("Error adding student"));
+    }
+
+    // Delete student
+    function deleteStudent(id) {
+      axios
+        .delete(`${API_URL}/${id}`)
+        .then(() => {
+          alert("Deleted successfully!");
+          getAll();
+        })
+        .catch((err) => alert("Error deleting student"));
+    }
+</script>
+</body>
+</html>
