@@ -5,6 +5,8 @@ import com.example.student_management.dto.UserDTO;
 import com.example.student_management.entity.User;
 
 import com.example.student_management.service.UserService;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,18 +30,44 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody User loginRequest) {
+    public ResponseEntity<?> loginUser(@RequestBody User loginRequest, HttpSession session) {
+
+
         try {
             UserDTO userDTO = userService.login(
                     loginRequest.getUserName(),
                     loginRequest.getPassword()
             );
-            return ResponseEntity.ok(userDTO); // returns JSON: { "id": 1, "userName": "Devesh" }
-        } catch (RuntimeException e) {
+
+
+
+            session.setAttribute("userId", userDTO.getId());
+            session.setAttribute("username", userDTO.getUserName());
+
+            return ResponseEntity.ok(userDTO);
+        } catch (RuntimeException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", ex.getMessage()));
         }
     }
+
+
+    @GetMapping("/check-login")
+    public ResponseEntity<?> checkLogin(HttpSession session) {
+        if (session.getAttribute("userId") != null) {
+            return ResponseEntity.ok("LoggedIn");
+        } else {
+            return ResponseEntity.status(401).body("NotLoggedIn");
+        }
+    }
+
+    //logout
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpSession session){
+        session.invalidate();
+        return ResponseEntity.ok("Logged out");
+    }
+
 
     //get all users
     @GetMapping
